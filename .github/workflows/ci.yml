@@ -15,7 +15,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-      - run: npm ci
+      - name: cache Node_modules
+        uses: actions/cache@v3
+        id: caches
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: install npm
+        if: steps.caches.outputs.cache-hit != 'true'
+        run: npm ci
       - run: npm run format:check
       - run: npm run test -- --coverage
         env:

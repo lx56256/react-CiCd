@@ -16,8 +16,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "format:check": "prettier --check \"**/*.{js,jsx,yml,json,yaml,css,scss,less,md}\"",
-    "format": "prettier --write \"**/*.{js,jsx,yml,json,yaml,css,scss,less,md}\""
+    "format:check": "npx prettier --check \"**/*.{js,jsx,yml,json,yaml,css,scss,less,md}\"",
+    "format": "npx prettier --write \"**/*.{js,jsx,yml,json,yaml,css,scss,less,md}\""
   },
   "eslintConfig": {
     "extends": [
@@ -36,8 +36,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "prettier": "2.8.4"
   }
 }
