@@ -1,0 +1,31 @@
+name: app-ci
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop]
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: use Nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run test -- --coverage
+        env:
+          CI: true
+      - name: Build Project
+        if: github.event_name == 'push'
+        run: npm run build
+      - name: Deploy to Surge
+        if: github.event_name == 'push'
+        run: surge --project ./build --domain mature-eyes.surge.sh
+        env:
+          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
