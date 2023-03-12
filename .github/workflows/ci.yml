@@ -31,9 +31,21 @@ jobs:
       - run: npm run test -- --coverage
         env:
           CI: true
+      - name: Upload test --coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage
+          path: coverage
       - name: Build Project
         if: github.event_name == 'push'
         run: npm run build
+      - name: Upload build --coverage
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build
+      - uses: actions/download-artifact@v3
       - name: Deploy to Surge
         if: github.event_name == 'push'
         run: npx surge --project ./build --domain mature-eyes.surge.sh
