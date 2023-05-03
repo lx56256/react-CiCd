@@ -31,4 +31,3 @@ git add .
 git cz
 git pull
 git push
-
