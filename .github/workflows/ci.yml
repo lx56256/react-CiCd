@@ -1,0 +1,58 @@
+name: app-ci
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: use Nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - name: cache Node_modules
+        uses: actions/cache@v3
+        id: caches
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: install npm
+        if: steps.caches.outputs.cache-hit != 'true'
+        run: npm ci
+      - run: npm run format:check
+      - run: npm run test -- --coverage
+        env:
+          CI: true
+      - name: Upload test --coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage
+          path: coverage
+      - name: Build Project
+        if: github.event_name == 'push'
+        run: npm run build
+      - name: Upload build --coverage
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build
+      - name: Create a release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npx -p node@v18-lts -c "npx semantic-release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to Surge
+        if: github.event_name == 'push'
+        run: npx surge --project ./build --domain mature-eyes.surge.sh
+        env:
+          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
