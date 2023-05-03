@@ -1,6 +1,6 @@
 module.exports = {
   release: {
-    branches: ['main'],
+    branches: [{ name: 'main' }],
     repositoryUrl: 'https://github.com/lx56256/react-CiCd',
     plugins: [
       '@semantic-release/commit-analyzer',
