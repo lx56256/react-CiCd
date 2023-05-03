@@ -9,6 +9,9 @@ on:
 jobs:
   build-app:
     runs-on: ubuntu-latest
+    env:
+      SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
+      SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
     steps:
       - uses: actions/checkout@v3
       - name: use Nodejs
@@ -45,14 +48,26 @@ jobs:
         with:
           name: build
           path: build
+      - name: ZIP Assets
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          zip -r build.zip ./build
+          zip -r coverage.zip ./coverage
       - name: Create a release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: npx -p node@v18-lts -c "npx semantic-release"
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-      - name: Deploy to Surge
-        if: github.event_name == 'push'
+      - name: Deploy to develop Surge
+        if: github.event_name == 'push' && github.refs == 'refs/heads/develop'
         run: npx surge --project ./build --domain mature-eyes.surge.sh
+      - name: Deploy to product Surge
+        if: github.event_name == 'push' && github.refs == 'refs/heads/main'
+        run: npx surge --project ./build --domain measure-product.surge.sh
+      - name: Upload coverage reports
+        if: github.event_name == 'push' && github.refs == 'refs/heads/main'
+        run: npx codecov
         env:
-          SURGE_LOGIN: ${{ secrets.SURGE_LOGIN }}
-          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        
+
