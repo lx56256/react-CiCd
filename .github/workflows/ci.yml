@@ -2,9 +2,9 @@ name: app-ci
 
 on:
   pull_request:
-    branches: [develop]
+    branches: [develop, master]
   push:
-    branches: [develop]
+    branches: [develop, master]
 
 jobs:
   build-app:
@@ -31,9 +31,25 @@ jobs:
       - run: npm run test -- --coverage
         env:
           CI: true
+      - name: Upload test --coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage
+          path: coverage
       - name: Build Project
         if: github.event_name == 'push'
         run: npm run build
+      - name: Upload build --coverage
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build
+      - name: Create a release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy to Surge
         if: github.event_name == 'push'
         run: npx surge --project ./build --domain mature-eyes.surge.sh
